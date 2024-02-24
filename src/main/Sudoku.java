@@ -66,7 +66,7 @@ public class Sudoku {
 	public static void main(String[] args) {
 		generateTest();
 		displayBoard();
-		System.out.println("valid board " + validateEntire());
+		System.out.println("valid board: " + validateEntire());
 		generate(difficulty.clues);
 		
 	}
@@ -132,42 +132,40 @@ public class Sudoku {
 		return true;
 	}
 	
-	//Return boolean if board is valid or not
+	//Returns if board is constraint compliant
 	private static boolean validateEntire() {
 		
 		boolean valid = true;
 		List<Integer> curRow, curCol;
-		int overall=0;
 		
-		do {
-			
 			//Loop for each cell - 81
 			for (int i = 0; i < 9; i++) {
 				for (int j = 0; j < 9 && valid; j++) {
 					
-					int cellValue = mainBoard[i][j];
+					valid = validateCell(i, j);
 					
-					//Get the row and column that the cell belongs to
-					curRow = Arrays.stream(mainBoard[i]).boxed().toList();
-					curCol = Arrays.stream(mainBoard[j]).boxed().toList();
-					
-					//Count number of occurrences cell value has
-					int occurrence = Collections.frequency(curRow, cellValue) + Collections.frequency(curCol, cellValue);
-					
-					//Call function to check if value is already in 3x3
-					if(occurrence > 2 || inBox(cellValue, i, j)) {valid = false;}
-					overall++;
 				}
 			}
-		} while (valid && overall < 81);
 		
 		return valid;
 	}
 	
-	private static boolean validateCell(int cellValue, int row, int col) {
+	//Returns if cell is constraint compliant
+	private static boolean validateCell(int row, int col) {
 		boolean valid = true;
+		//Get current cell value
+		int cellValue = mainBoard[row][col];
 		
+		//Get the row and column that cell belongs to
+		List<Integer> curRow = Arrays.stream(mainBoard[row]).boxed().toList();
+		List<Integer> curCol = Arrays.stream(mainBoard[col]).boxed().toList();
 		
+		//Count number of occurrences cell value has in its row and column
+		int occurrence = Collections.frequency(curRow, cellValue) + Collections.frequency(curCol, cellValue);
+		
+		//Call function to check if value is already in 3x3
+		if(occurrence > 2 || inBox(cellValue, row, col)) {valid = false;}
+
 		return valid;
 	}
 
@@ -193,7 +191,7 @@ public class Sudoku {
 	}
 
 	//Given a int[][] board, method fills the board to 0's
-	public static void fillBoardWithNumber() {
+	private static void fillBoardWithNumber() {
 		for (int[] row : board) {Arrays.fill(row, 1);}
 			
 	}
