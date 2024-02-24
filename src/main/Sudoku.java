@@ -61,11 +61,12 @@ public class Sudoku {
         };
 	
 	
-	private static Difficulty difficulty = Difficulty.EXTREME;
+	private static Difficulty difficulty = Difficulty.NORMAL;
 	
 	public static void main(String[] args) {
-		
-		fillBoardEmpty();
+		generateTest();
+		displayBoard();
+		System.out.println("valid board " + validateEntire());
 		generate(difficulty.clues);
 		
 	}
@@ -73,7 +74,6 @@ public class Sudoku {
 	private static void generate(int clues) {
 
 		int[][] coordinates = getRandomCoords(clues);
-		System.out.println(coordinates.length);
 
 	}
 
@@ -133,7 +133,7 @@ public class Sudoku {
 	}
 	
 	//Return boolean if board is valid or not
-	private static boolean validate() {
+	private static boolean validateEntire() {
 		
 		boolean valid = true;
 		List<Integer> curRow, curCol;
@@ -163,6 +163,13 @@ public class Sudoku {
 		
 		return valid;
 	}
+	
+	private static boolean validateCell(int cellValue, int row, int col) {
+		boolean valid = true;
+		
+		
+		return valid;
+	}
 
 	//Checks if cellValue is Unique in 3x3 grid
 	private static boolean inBox(int cellValue, int row, int col) {
@@ -186,10 +193,24 @@ public class Sudoku {
 	}
 
 	//Given a int[][] board, method fills the board to 0's
-	public static void fillBoardEmpty() {
-		for (int[] row : board) {Arrays.fill(row, 0);}
+	public static void fillBoardWithNumber() {
+		for (int[] row : board) {Arrays.fill(row, 1);}
 			
 	}
 	
+	public static void displayBoard() {
+		for (int[] row : board) {System.out.println(Arrays.toString(row));}
+	}
+	
+	private static void generateTest() {
+		
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				Random rand = new Random();
+				board[i][j] = rand.nextInt(9) + 1;
+			}
+		}
+		
+	}
 
 }
