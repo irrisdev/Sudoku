@@ -104,54 +104,7 @@ public class Sudoku {
 		return false;
 	}
 
-	private static int[][] generate() {
-		//Initialise 9x9 Board
-		
-		//Initialise row & column for checking
-		List<Integer> curRow, curCol;
-		
-		//Instantiate new random object for randNum
-		Random random = new Random();
-		
-		//Fill each cell with 0 initially
-
-		
-		int overall = 0;
-		boolean valid = true;
-		while (valid && overall<81) {
-			for (int i = 0; i < 9; i++) {
-				
-				for (int j = 0; j < 9; j++) {
-					int unique = 0;
-
-					curRow = Arrays.stream(mainBoard[i]).boxed().toList();
-					curCol = Arrays.stream(mainBoard[j]).boxed().toList();
-					System.out.println("Unique = " + Integer.toString(unique));
-					int rand = random.nextInt(9) + 1;
-					while (curRow.contains(rand) || curCol.contains(rand)) {
-						if(unique >= 9) {
-							valid = false;
-							break;
-						}
-						
-						rand = random.nextInt(9) + 1;
-						unique++;
-
-					}
-					
-					if (valid) {
-						mainBoard[i][j] = rand;
-					}
-					overall++;
-					System.out.println(overall);
-
-				}
-			}
-		}
-		
-		System.out.println(valid);
-		return mainBoard;
-	}
+	
 	
 	//Given a int[][] board = new int[9][9] this method fills the board to 0's
 	public static void fillBoardEmpty(int[][] inputBoard) {
