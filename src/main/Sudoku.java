@@ -7,41 +7,48 @@ import java.util.List;
 import java.util.Random;
 
 public class Sudoku {
+	/* 	
+ 	Invalid 3x3 test case
+    {1,2,3,4,5,6,7,8,9},
+	{9,1,2,3,4,5,6,7,8},
+	{8,9,1,2,3,4,5,6,7},
+	{7,8,9,1,2,3,4,5,6},
+	{6,7,8,9,1,2,3,4,5},
+	{5,6,7,8,9,1,2,3,4},
+	{4,5,6,7,8,9,1,2,3},
+	{3,4,5,6,7,8,9,1,2},
+	{2,3,4,5,6,7,8,9,1}
 	
-	 /*
-	 * Constraints: Each number (1-9)
-	 * - Appear once per Row
-	 * - Appear Once per Col 
-	 * - Appear Once per Box
-	 * 
+	Valid test case
+	{5, 3, 4, 6, 7, 8, 9, 1, 2},
+	{6, 7, 2, 1, 9, 5, 3, 4, 8},
+	{1, 9, 8, 3, 4, 2, 5, 6, 7},
+	{8, 5, 9, 7, 6, 1, 4, 2, 3},
+	{4, 2, 6, 8, 5, 3, 7, 9, 1},
+	{7, 1, 3, 9, 2, 4, 8, 5, 6},
+	{9, 6, 1, 5, 3, 7, 2, 8, 4},
+	{2, 8, 7, 4, 1, 9, 6, 3, 5},
+	{3, 4, 5, 2, 8, 6, 1, 7, 9}
+	
 	 */
+	
 	//private static int[][] board = new int[9][9];
 	public static void main(String[] args) {
 		System.out.println(validate());
 	}
 	
 	private static int[][] mainBoard = {
-			{5, 3, 4, 6, 7, 8, 9, 1, 2},
-		    {6, 7, 2, 1, 9, 5, 3, 4, 8},
-		    {1, 9, 8, 3, 4, 2, 5, 6, 7},
-		    {8, 5, 9, 7, 6, 1, 4, 2, 3},
-		    {4, 2, 6, 8, 5, 3, 7, 9, 1},
-		    {7, 1, 3, 9, 2, 4, 8, 5, 6},
-		    {9, 6, 1, 5, 3, 7, 2, 8, 4},
-		    {2, 8, 7, 4, 1, 9, 6, 3, 5},
-		    {3, 4, 5, 2, 8, 6, 1, 7, 9}
+			{1,2,3,4,5,6,7,8,9},
+			{9,1,2,3,4,5,6,7,8},
+			{8,9,1,2,3,4,5,6,7},
+			{7,8,9,1,2,3,4,5,6},
+			{6,7,8,9,1,2,3,4,5},
+			{5,6,7,8,9,1,2,3,4},
+			{4,5,6,7,8,9,1,2,3},
+			{3,4,5,6,7,8,9,1,2},
+			{2,3,4,5,6,7,8,9,1}
         };
-	/* 	3x3 Test Case
-	    {1,2,3,4,5,6,7,8,9},
-		{9,1,2,3,4,5,6,7,8},
-		{8,9,1,2,3,4,5,6,7},
-		{7,8,9,1,2,3,4,5,6},
-		{6,7,8,9,1,2,3,4,5},
-		{5,6,7,8,9,1,2,3,4},
-		{4,5,6,7,8,9,1,2,3},
-		{3,4,5,6,7,8,9,1,2},
-		{2,3,4,5,6,7,8,9,1}
-	 */
+	
 	private static boolean validate() {
 		
 		boolean valid = true;
@@ -72,39 +79,22 @@ public class Sudoku {
 	
 	
 	
-	
+	//Checks if cellValue is Unique in 3x3 grid
 	private static boolean inBox(int cellValue, int row, int col) {
-		
+		//Finds grid that cellValue belongs to
 		int checkRow = (int) Math.ceil((row+1) / 3.0);
 		int checkCol = (int) Math.ceil((col+1) / 3.0);
-		
-		String output = "--------Information----------\n";
-		output += "Value: " + cellValue + " Index: " + (row+1)*(col+1) + " Grid: " + (checkRow*checkCol) + "\n-----------------------------\n";
-				
-		String coord = "";
+		//List of seen values in 3x3 grid
 		List<Integer> seen = new ArrayList<>();
+		//Checks value against each cell in 3x3 grid
 		for (int i = (checkRow*3)-3; i < checkRow*3; i++) {
-			
-			String coordsChecked = "";
-			String numbChecked = "";
-			
 			for (int j = (checkCol*3)-3; j < checkCol*3; j++) {
 
-				coordsChecked += "(" + j + ", " + i + ")";
-				numbChecked += mainBoard[i][j] + " ";
-				
-				if(Collections.frequency(seen, cellValue) > 1) {
-					System.out.println("Error");
-					return true;
-				} else { seen.add(mainBoard[i][j]);}
+				if (Collections.frequency(seen, cellValue) > 1) return true;
+				else seen.add(mainBoard[i][j]);
 				
 			}
-			
-			coord += coordsChecked + "   " + numbChecked + "\n";
-
 		}
-		output += coord;
-		//System.out.println(output);
 		return false;
 	}
 
