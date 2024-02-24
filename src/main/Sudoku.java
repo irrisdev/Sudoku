@@ -3,8 +3,10 @@ package main;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 public class Sudoku {
 	/* 	
@@ -32,11 +34,20 @@ public class Sudoku {
 	
 	 */
 	
-	//private static int[][] board = new int[9][9];
-	public static void main(String[] args) {
-		System.out.println(validate());
-	}
+	private enum Difficulty {
+		  EASY(45),
+		  NORMAL(30),
+		  HARD(25),
+		  EXTREME(17);
+		
+		  public final int clues;
+
+	        private Difficulty(int clues) {
+	            this.clues = clues;
+	        }
+		}
 	
+	private static int[][] board = new int[9][9];
 	private static int[][] mainBoard = {
 			{1,2,3,4,5,6,7,8,9},
 			{9,1,2,3,4,5,6,7,8},
@@ -49,6 +60,79 @@ public class Sudoku {
 			{2,3,4,5,6,7,8,9,1}
         };
 	
+	
+	private static Difficulty difficulty = Difficulty.EXTREME;
+	
+	public static void main(String[] args) {
+		
+		fillBoardEmpty();
+		generate(difficulty.clues);
+		
+	}
+
+	private static void generate(int clues) {
+
+		int[][] coordinates = getRandomCoords(clues);
+		System.out.println(coordinates.length);
+
+	}
+
+	//Generates 2D Array of Unique coordinates for clues
+	private static int[][] getRandomCoords(int clues) {
+		//Random Object for random numbers
+		Random rand = new Random();
+		
+		//2D Array to store coordinates
+		int[][] coordinates = new int[clues][2];
+		
+		//1D Array to cache existing coordinates
+		boolean[] seen = new boolean[81];
+		
+		for (int i = 0; i < clues; i++) {
+			
+			//Random number column and row between (0-8)
+			int randomRow = rand.nextInt(9);
+			int randomCol = rand.nextInt(9);
+			
+			//Convert 2D array index to 1D index
+			int index = (randomRow * 9) + randomCol;
+			
+			//Check if coordinate already exists
+			while (seen[index]) {
+				randomRow = rand.nextInt(9);
+				randomCol = rand.nextInt(9);
+				index = (randomRow * 9) + randomCol;
+			}
+			
+			//Cache coordinate
+			seen[index] = true;
+			
+			//Update 2D array with unique coordinates
+			coordinates[i][0] = randomRow;
+			coordinates[i][1] = randomCol;
+
+		}
+		
+		//Final check if coordinates are unique, if not call method recursively 
+		return checkRandomCoords(coordinates) ? coordinates : getRandomCoords(clues);
+	}
+
+	//Used for verifying random coordinates are unique
+	private static boolean checkRandomCoords(int[][] coordinates) {
+		
+		Set<String> seenCoords = new HashSet<>();
+		
+		for (int[] coor : coordinates) {
+			String xy = "( " + coor[0] + ", " + coor[1] + " )";
+			if (seenCoords.contains(xy)) {				
+				return false;
+			} else seenCoords.add(xy);
+		}
+	
+		return true;
+	}
+	
+	//Return boolean if board is valid or not
 	private static boolean validate() {
 		
 		boolean valid = true;
@@ -79,10 +163,7 @@ public class Sudoku {
 		
 		return valid;
 	}
-	
-	
-	
-	
+
 	//Checks if cellValue is Unique in 3x3 grid
 	private static boolean inBox(int cellValue, int row, int col) {
 		//Finds grid that cellValue belongs to
@@ -91,8 +172,8 @@ public class Sudoku {
 		
 		//List of seen values in 3x3 grid
 		List<Integer> seen = new ArrayList<>();
-		//Checks value against each cell in 3x3 grid
 		
+		//Checks value against each cell in 3x3 grid
 		for (int i = (checkRow*3)-3; i < checkRow*3; i++) {
 			for (int j = (checkCol*3)-3; j < checkCol*3; j++) {
 
@@ -104,11 +185,9 @@ public class Sudoku {
 		return false;
 	}
 
-	
-	
-	//Given a int[][] board = new int[9][9] this method fills the board to 0's
-	public static void fillBoardEmpty(int[][] inputBoard) {
-		for (int[] row : inputBoard) {Arrays.fill(row, 0);}
+	//Given a int[][] board, method fills the board to 0's
+	public static void fillBoardEmpty() {
+		for (int[] row : board) {Arrays.fill(row, 0);}
 			
 	}
 	
