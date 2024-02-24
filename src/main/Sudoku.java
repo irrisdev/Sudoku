@@ -56,16 +56,20 @@ public class Sudoku {
 		int overall=0;
 		
 		do {
+			
 			//Loop for each cell - 81
 			for (int i = 0; i < 9; i++) {
 				for (int j = 0; j < 9 && valid; j++) {
 					
 					int cellValue = mainBoard[i][j];
+					
 					//Get the row and column that the cell belongs to
 					curRow = Arrays.stream(mainBoard[i]).boxed().toList();
 					curCol = Arrays.stream(mainBoard[j]).boxed().toList();
+					
 					//Count number of occurrences cell value has
 					int occurrence = Collections.frequency(curRow, cellValue) + Collections.frequency(curCol, cellValue);
+					
 					//Call function to check if value is already in 3x3
 					if(occurrence > 2 || inBox(cellValue, i, j)) {valid = false;}
 					overall++;
@@ -84,9 +88,11 @@ public class Sudoku {
 		//Finds grid that cellValue belongs to
 		int checkRow = (int) Math.ceil((row+1) / 3.0);
 		int checkCol = (int) Math.ceil((col+1) / 3.0);
+		
 		//List of seen values in 3x3 grid
 		List<Integer> seen = new ArrayList<>();
 		//Checks value against each cell in 3x3 grid
+		
 		for (int i = (checkRow*3)-3; i < checkRow*3; i++) {
 			for (int j = (checkCol*3)-3; j < checkCol*3; j++) {
 
