@@ -33,10 +33,11 @@ public class Sudoku {
 	{3, 4, 5, 2, 8, 6, 1, 7, 9}
 	
 	 */
-	
+	private Difficulty difficulty;
+
 	private enum Difficulty {
-		  EASY(45),
 		  NORMAL(30),
+		  EASY(45),
 		  HARD(25),
 		  EXTREME(17);
 		
@@ -47,34 +48,52 @@ public class Sudoku {
 	        }
 		}
 	
-	private static int[][] board = new int[9][9];
-	private static int[][] mainBoard = {
-			{1,2,3,4,5,6,7,8,9},
-			{9,1,2,3,4,5,6,7,8},
-			{8,9,1,2,3,4,5,6,7},
-			{7,8,9,1,2,3,4,5,6},
-			{6,7,8,9,1,2,3,4,5},
-			{5,6,7,8,9,1,2,3,4},
-			{4,5,6,7,8,9,1,2,3},
-			{3,4,5,6,7,8,9,1,2},
-			{2,3,4,5,6,7,8,9,1}
-        };
+	private int[][] board = new int[9][9];;
 	
+	public Sudoku() {
+		this("Normal");
+	}
 	
-	private static Difficulty difficulty = Difficulty.NORMAL;
-	
-	public static void main(String[] args) {
-		generateTest();
-		displayBoard();
-		System.out.println("valid board: " + validateEntire());
-		generate(difficulty.clues);
+	public Sudoku(String diff) {
+		try {
+			difficulty = Difficulty.valueOf(diff.toUpperCase());
+		} catch (IllegalArgumentException e) {
+			difficulty = Difficulty.NORMAL;
+		}
+		System.out.println(difficulty);
+		generate();
 		
 	}
 
-	private static void generate(int clues) {
+	public int[][] getBoard() {
+		return board;
+	}
 
-		int[][] coordinates = getRandomCoords(clues);
+	public void generate() {
+		int clues = difficulty.clues;		
+		//Fills the board with clues
+		fillClues(getRandomCoords(clues));
+		System.out.println(validateEntire());
+		
+	}
 
+	private void fillClues(int[][] randomCoords) {
+		for (int i = 0; i < randomCoords.length; i++) {
+			
+			int row = randomCoords[i][1];
+			int col = randomCoords[i][0];
+			
+			fillNumber(row, col);
+		}
+		
+	}
+
+	private void fillNumber(int row, int col) {
+
+		Random rand = new Random();
+		
+		board[row][col] = rand.nextInt(9) + 1;
+		
 	}
 
 	//Generates 2D Array of Unique coordinates for clues
@@ -131,34 +150,16 @@ public class Sudoku {
 	
 		return true;
 	}
-	
-	//Returns if board is constraint compliant
-	private static boolean validateEntire() {
-		
-		boolean valid = true;
-		List<Integer> curRow, curCol;
-		
-			//Loop for each cell - 81
-			for (int i = 0; i < 9; i++) {
-				for (int j = 0; j < 9 && valid; j++) {
-					
-					valid = validateCell(i, j);
-					
-				}
-			}
-		
-		return valid;
-	}
-	
+
 	//Returns if cell is constraint compliant
-	private static boolean validateCell(int row, int col) {
+	private boolean validateCell(int row, int col) {
 		boolean valid = true;
 		//Get current cell value
-		int cellValue = mainBoard[row][col];
+		int cellValue = board[row][col];
 		
 		//Get the row and column that cell belongs to
-		List<Integer> curRow = Arrays.stream(mainBoard[row]).boxed().toList();
-		List<Integer> curCol = Arrays.stream(mainBoard[col]).boxed().toList();
+		List<Integer> curRow = Arrays.stream(board[row]).boxed().toList();
+		List<Integer> curCol = Arrays.stream(board[col]).boxed().toList();
 		
 		//Count number of occurrences cell value has in its row and column
 		int occurrence = Collections.frequency(curRow, cellValue) + Collections.frequency(curCol, cellValue);
@@ -170,7 +171,7 @@ public class Sudoku {
 	}
 
 	//Checks if cellValue is Unique in 3x3 grid
-	private static boolean inBox(int cellValue, int row, int col) {
+	private boolean inBox(int cellValue, int row, int col) {
 		//Finds grid that cellValue belongs to
 		int checkRow = (int) Math.ceil((row+1) / 3.0);
 		int checkCol = (int) Math.ceil((col+1) / 3.0);
@@ -183,24 +184,36 @@ public class Sudoku {
 			for (int j = (checkCol*3)-3; j < checkCol*3; j++) {
 
 				if (Collections.frequency(seen, cellValue) > 1) return true;
-				else seen.add(mainBoard[i][j]);
+				else seen.add(board[i][j]);
 				
 			}
 		}
 		return false;
 	}
-
-	//Given a int[][] board, method fills the board to 0's
-	private static void fillBoardWithNumber() {
-		for (int[] row : board) {Arrays.fill(row, 1);}
-			
-	}
 	
-	public static void displayBoard() {
+	//Returns if board is constraint compliant
+	private boolean validateEntire() {
+		
+		boolean valid = true;		
+			//Loop for each cell - 81
+			for (int i = 0; i < 9; i++) {
+				for (int j = 0; j < 9 && valid; j++) {
+					
+					valid = validateCell(i, j);
+					
+				}
+			}
+		
+		return valid;
+	}
+
+	//Displays entire Sudoku Board
+	public void displayBoard() {
 		for (int[] row : board) {System.out.println(Arrays.toString(row));}
 	}
 	
-	private static void generateTest() {
+	//Generates a board full of random numbers
+	private void generateTest() {
 		
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
@@ -210,5 +223,10 @@ public class Sudoku {
 		}
 		
 	}
-
+	
+	//Given a int[][] board, method fills the board to 0's
+	private void fillBoardWithNumber() {
+		for (int[] row : board) {Arrays.fill(row, 1);}
+				
+	}
 }
