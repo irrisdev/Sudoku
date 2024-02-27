@@ -5,74 +5,54 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.Random;
 import java.util.Set;
 
 public class Sudoku {
-	/* 	
- 	Invalid 3x3 test case
-    {1,2,3,4,5,6,7,8,9},
-	{9,1,2,3,4,5,6,7,8},
-	{8,9,1,2,3,4,5,6,7},
-	{7,8,9,1,2,3,4,5,6},
-	{6,7,8,9,1,2,3,4,5},
-	{5,6,7,8,9,1,2,3,4},
-	{4,5,6,7,8,9,1,2,3},
-	{3,4,5,6,7,8,9,1,2},
-	{2,3,4,5,6,7,8,9,1}
-	
-	Valid test case
-	{5, 3, 4, 6, 7, 8, 9, 1, 2},
-	{6, 7, 2, 1, 9, 5, 3, 4, 8},
-	{1, 9, 8, 3, 4, 2, 5, 6, 7},
-	{8, 5, 9, 7, 6, 1, 4, 2, 3},
-	{4, 2, 6, 8, 5, 3, 7, 9, 1},
-	{7, 1, 3, 9, 2, 4, 8, 5, 6},
-	{9, 6, 1, 5, 3, 7, 2, 8, 4},
-	{2, 8, 7, 4, 1, 9, 6, 3, 5},
-	{3, 4, 5, 2, 8, 6, 1, 7, 9}
-		
-		
-		{1, 0, 0, 0, 0, 0, 0, 2, 0},
-					{0, 0, 3, 0, 7, 0, 0, 0, 0},
-					{4, 0, 0, 0, 0, 0, 0, 0, 8},
-					{0, 0, 0, 0, 8, 0, 0, 3, 0},
-					{0, 0, 0, 0, 0, 0, 0, 0, 0},
-					{0, 0, 0, 0, 0, 2, 0, 0, 0},
-					{6, 0, 0, 0, 0, 0, 0, 0, 0},
-					{0, 4, 7, 0, 0, 0, 0, 9, 0},
-					{0, 0, 0, 0, 0, 0, 0, 0, 0}	
-	 */
+
 	private Difficulty difficulty;
 
 	private enum Difficulty {
-		  NORMAL(30),
-		  EASY(45),
-		  HARD(25),
-		  EXTREME(17);
-		
-		  public final int clues;
+		NORMAL(30), EASY(45), HARD(25), EXTREME(17);
 
-	        private Difficulty(int clues) {
-	            this.clues = clues;
-	        }
+		public final int clues;
+
+		private Difficulty(int clues) {
+			this.clues = clues;
 		}
-	
+	}
+
 	private int[][] board;
-	
+
 	public Sudoku() {
 		this("Normal");
 	}
-	
+
+	int successfulValidations = 0;
+	int backTracked = 0;
+	List<Long> timeTaken = new ArrayList<>();
+	double time;
+
 	public Sudoku(String diff) {
 		try {
 			difficulty = Difficulty.valueOf(diff.toUpperCase());
 		} catch (IllegalArgumentException e) {
 			difficulty = Difficulty.NORMAL;
 		}
-		
-		generate();
-		
+
+		generate(5000);
+		OptionalDouble average = timeTaken
+	            .stream()
+	            .mapToDouble(a -> a)
+	            .average();
+		double timeAverage = average.isPresent() ? average.getAsDouble() : 0; 
+		System.out.println("Successfully Validated board: " + successfulValidations + " times");
+		System.out.println("Backtracked: " + backTracked + " times");
+		System.out.println("Average time per/board: " + timeAverage + "ms");
+		System.out.println("Overall time taken: " + time + "ms");
+
+
 	}
 
 	public int[][] getBoard() {
@@ -80,150 +60,126 @@ public class Sudoku {
 	}
 
 	public void generate(int n) {
-		int clues = difficulty.clues;	
-	    int failedValidation = 0;
-	    int backTracked = 0;
-		Random rand = new Random();
-		board = new int[9][9];
-	    
-	    int i, j, nChoices, rolled;
-	    int index = 0;
-	    int[] coordinate2D;
-	    boolean[] choicesCreated = new boolean[81];
-	    ArrayList<Integer>[] choices = (ArrayList<Integer>[]) new ArrayList[81];
-
-	    while(index < 81) {
-	    	
-	    	coordinate2D = convertIndex(index);
-	    	i = coordinate2D[0];
-	    	j = coordinate2D[1];
-
-	    	if(board[i][j] == 0) {
-	    		choicesCreated[index] = true;
-	    		choices[index] = (new ArrayList<>(getCellChoices(i, j)));
-	    	}
-//	    	
-	    	nChoices = choices[index].size();
-	    	
-	    	while(nChoices == 0) {
-	    		index--;
-		    	nChoices = choices[index].size();
-		    	coordinate2D = convertIndex(index);
-		    	i = coordinate2D[0];
-		    	j = coordinate2D[1];
-		    	board[i][j] = 0;
-		    	backTracked++;
-	    	}
-	    	
-	    	rolled = choices[index].get(rand.nextInt(nChoices));
-	    	choices[index].remove((Integer) rolled);
-	    	board[i][j] = rolled;
-
-	    	if(!validateCell(i,j)) {
-	    		System.out.println("Failed a Validation");
-	    	}
-	    	index++;
-	    }
-	    displayBoard();
-	    System.out.println("Valid Board: " + validateEntire());
-	    System.out.println("Backtracked: " + backTracked + " times");
-	    System.out.println("Failed Cell Validation: " + failedValidation + " times");
-
-		
+		long start = System.currentTimeMillis();
+		for(int i = 0; i < n; i++) {
+			generate();
+		}
+		time = System.currentTimeMillis() - start;
 	}
 
+	public void generate() {
+		
+		Random rand = new Random();
+		board = new int[9][9];
+
+		int i, j, nChoices, rolled;
+		int index = 0;
+		int[] coordinate2D;
+		boolean[] choicesCreated = new boolean[81];
+		ArrayList<Integer>[] choices = (ArrayList<Integer>[]) new ArrayList[81];
+		
+		long start = System.currentTimeMillis();
+		while (index < 81) {
+
+			coordinate2D = convertIndex(index);
+			i = coordinate2D[0];
+			j = coordinate2D[1];
+
+			if (board[i][j] == 0) {
+				choicesCreated[index] = true;
+				choices[index] = (new ArrayList<>(getCellChoices(i, j)));
+			}
+	    	
+			nChoices = choices[index].size();
+
+			while (nChoices == 0) {
+				index--;
+				nChoices = choices[index].size();
+				coordinate2D = convertIndex(index);
+				i = coordinate2D[0];
+				j = coordinate2D[1];
+				board[i][j] = 0;
+				backTracked++;
+			}
+
+			rolled = choices[index].get(rand.nextInt(nChoices));
+			choices[index].remove((Integer) rolled);
+			board[i][j] = rolled;
+
+			if (!validateCell(i, j)) {
+				System.exit(0);
+			}
+			index++;
+		}
+		timeTaken.add(System.currentTimeMillis() - start);
+		if (validateEntire()) successfulValidations++; 
+	}
+
+	// Converts given 1D index to 2D array index i,j
 	private int[] convertIndex(int index) {
 		int[] coord = new int[2];
-    	if(index < 9) {
-    		coord[0] = 0;
-    		coord[1] = index;
-    	} else {
-    		coord[0] = ((int) Math.floor(index/9));
-    		coord[1] = (index % 9);
-    	}
+		if (index < 9) {
+			coord[0] = 0;
+			coord[1] = index;
+		} else {
+			coord[0] = ((int) Math.floor(index / 9));
+			coord[1] = (index % 9);
+		}
 		return coord;
 	}
 
-	private void fillClues(int[][] randomCoords) {
-		for (int iterator = 0; iterator < randomCoords.length; iterator++) {
-			int i = randomCoords[iterator][0];
-			int j = randomCoords[iterator][1];
-			
-			fillNumber(i, j, iterator);
-		}
-		
-	}
-
-	private void fillNumber(int i, int j, int iterator) {
-		
-//		List<Integer> choices = new ArrayList<>(getCellChoices(i, j));
-//		
-//		Random rand = new Random();
-//		int randomIndex = 0;
-//		if(!choices.isEmpty()) {
-//			do {
-//				randomIndex = rand.nextInt(choices.size());
-//				board[i][j] = choices.get(randomIndex);
-//				choices.remove(randomIndex);
-//			} while (!validateCell(i, j));
-//		} else {
-//			System.out.println("failed");
-//		}
-		board[i][j] = iterator+1;
-	}
-
+	// Returns List of Available numbers of given cell
 	private List<Integer> getCellChoices(int row, int col) {
-		
 		List<Integer> rowChoices = getRowChoices(row);
 		List<Integer> colChoices = getColChoices(col);
 		List<Integer> boxChoices = getBoxChoices(row, col);
-//		System.out.println("Row: " + row + " Col: " + col);
-//		System.out.println("Row Choices: " + rowChoices.toString());
-//		System.out.println("Col Choices: " + colChoices.toString());
-//		System.out.println("Box Choices: " + boxChoices.toString());
-//		System.out.println(getUniqueChoice(rowChoices, colChoices, boxChoices).toString());
 		return getUniqueChoice(rowChoices, colChoices, boxChoices);
 	}
 
+	// Returns List of Available numbers in 3x3 box of given cell
 	private List<Integer> getBoxChoices(int row, int col) {
-		int checkRow = (int) Math.ceil((row+1) / 3.0);
-		int checkCol = (int) Math.ceil((col+1) / 3.0);
-				
+		int checkRow = (int) Math.ceil((row + 1) / 3.0);
+		int checkCol = (int) Math.ceil((col + 1) / 3.0);
+
 		List<Integer> seen = new ArrayList<>();
-				
-		for (int i = (checkRow*3)-3; i < checkRow*3; i++) {
-			for (int j = (checkCol*3)-3; j < checkCol*3; j++) {
+
+		for (int i = (checkRow * 3) - 3; i < checkRow * 3; i++) {
+			for (int j = (checkCol * 3) - 3; j < checkCol * 3; j++) {
 				if (board[i][j] > 0) {
 					seen.add(board[i][j]);
 				}
 			}
 		}
-		for(int i = 1; i <= 9; i++) {
-			if(seen.contains(i)) {
+		for (int i = 1; i <= 9; i++) {
+			if (seen.contains(i)) {
 				Integer n = i;
 				seen.remove(n);
-			} else seen.add(i);
+			} else
+				seen.add(i);
 		}
 		return seen;
 	}
 
+	// Returns List of Available numbers in column of given cell
 	private List<Integer> getColChoices(int col) {
 		List<Integer> curCol = new ArrayList<>();
-		for(int[] roww : board) {
+		for (int[] roww : board) {
 			if (roww[col] > 0) {
 				curCol.add(roww[col]);
 			}
 		}
-		for(int i = 1; i <= 9; i++) {
-			if(curCol.contains(i)) {
+		for (int i = 1; i <= 9; i++) {
+			if (curCol.contains(i)) {
 				Integer n = i;
 				curCol.remove(n);
-			} else curCol.add(i);
+			} else
+				curCol.add(i);
 		}
-		
+
 		return curCol;
 	}
 
+	// Returns List of Available numbers in row of given cell
 	private List<Integer> getRowChoices(int row) {
 		List<Integer> curRow = new ArrayList<>();
 		for (int num : board[row]) {
@@ -231,65 +187,67 @@ public class Sudoku {
 				curRow.add(num);
 			}
 		}
-		
-		for(int i = 1; i <= 9; i++) {
-			if(curRow.contains(i)) {
+
+		for (int i = 1; i <= 9; i++) {
+			if (curRow.contains(i)) {
 				Integer n = i;
 				curRow.remove(n);
 			} else {
 				curRow.add(i);
 			}
 		}
-		
+
 		return curRow;
 	}
 
+	// Returns intersection of 3 lists
 	private List<Integer> getUniqueChoice(List<Integer> rowChoices, List<Integer> colChoices,
 			List<Integer> boxChoices) {
 		List<Integer> firstJoin = rowChoices.stream().distinct().filter(colChoices::contains).toList();
 		return firstJoin.stream().distinct().filter(boxChoices::contains).toList();
 	}
 
-	//Generates 2D Array of Unique coordinates for clues
+	// Generates 2D Array of Unique coordinates for clues
 	private static int[][] getRandomCoords(int clues) {
-		//Random Object for random numbers
+		// Random Object for random numbers
 		Random rand = new Random();
-		
-		//2D Array to store coordinates
+
+		// 2D Array to store coordinates
 		int[][] coordinates = new int[clues][2];
 
-		//1D Array to cache existing coordinates
+		// 1D Array to cache existing coordinates
 		boolean[] seen = new boolean[81];
-		
+
 		for (int counter = 0; counter < clues; counter++) {
-			
-			//Random number column and row between (0-8)
+
+			// Random number column and row between (0-8)
 			int i = rand.nextInt(9);
 			int j = rand.nextInt(9);
-			
-			//Convert 2D array index to 1D index
+
+			// Convert 2D array index to 1D index
 			int index = (i * 9) + j;
-			
-			//Check if coordinate already exists
+
+			// Check if coordinate already exists
 			while (seen[index]) {
 				i = rand.nextInt(9);
 				j = rand.nextInt(9);
 				index = (i * 9) + j;
 			}
-			int[] coord = {i, j};
-			//Cache coordinate
+			int[] coord = { i, j };
+			// Cache coordinate
 			seen[index] = true;
-			
-			//Update 2D array with unique coordinates
+
+			// Update 2D array with unique coordinates
 			coordinates[counter] = coord;
-			
+
 		}
 		sort2DArray(coordinates);
-		
-		//Final check if coordinates are unique, if not call method recursively 
+
+		// Final check if coordinates are unique, if not call method recursively
 		return checkRandomCoords(coordinates) ? coordinates : getRandomCoords(clues);
 	}
 
+	// Sorts 2D array by converting to 1D index and bubble sorting ASC
 	private static void sort2DArray(int[][] coordinates) {
 		int n = coordinates.length;
 		int i, j, arrJ, arrJ1;
@@ -310,103 +268,101 @@ public class Sudoku {
 			if (swapped == false)
 				break;
 		}
-		
+
 	}
 
-	//Used for verifying random coordinates are unique
+	// Used for verifying random coordinates are unique
 	private static boolean checkRandomCoords(int[][] coordinates) {
-		
+
 		Set<String> seenCoords = new HashSet<>();
-		
+
 		for (int[] coor : coordinates) {
 			String xy = "( " + coor[0] + ", " + coor[1] + " )";
-			if (seenCoords.contains(xy)) {				
+			if (seenCoords.contains(xy)) {
 				return false;
-			} else seenCoords.add(xy);
+			} else
+				seenCoords.add(xy);
 		}
-	
+
 		return true;
 	}
 
-	//Returns if cell is constraint compliant
+	// Returns if cell is constraint compliant
 	private boolean validateCell(int row, int col) {
 		boolean valid = true;
-		//Get current cell value
+		// Get current cell value
 		int cellValue = board[row][col];
-		if (cellValue < 1) return true;
-		//Get the row and column that cell belongs to
+		// Get the row and column that cell belongs to
 		List<Integer> curRow = Arrays.stream(board[row]).boxed().toList();
 		List<Integer> curCol = new ArrayList<>();
-		for(int[] roww : board) {
+		for (int[] roww : board) {
 			curCol.add(roww[col]);
 		}
-		
-		//Count number of occurrences cell value has in its row and column
+
+		// Count number of occurrences cell value has in its row and column
 		int occurrence = Collections.frequency(curRow, cellValue) + Collections.frequency(curCol, cellValue);
-		
-		//Call function to check if value is already in 3x3
-		if(occurrence > 2 || inBox(cellValue, row, col)) {valid = false;}
+
+		// Call function to check if value is already in 3x3
+		if (occurrence > 2 || inBox(cellValue, row, col)) {
+			valid = false;
+		}
 
 		return valid;
 	}
 
-	//Checks if cellValue is Unique in 3x3 grid
+	// Checks if cellValue is Unique in 3x3 grid
 	private boolean inBox(int cellValue, int row, int col) {
-		//Finds grid that cellValue belongs to
-		int checkRow = (int) Math.ceil((row+1) / 3.0);
-		int checkCol = (int) Math.ceil((col+1) / 3.0);
-		
-		//List of seen values in 3x3 grid
-		List<Integer> seen = new ArrayList<>();
-		
-		//Checks value against each cell in 3x3 grid
-		for (int i = (checkRow*3)-3; i < checkRow*3; i++) {
-			for (int j = (checkCol*3)-3; j < checkCol*3; j++) {
+		// Finds grid that cellValue belongs to
+		int checkRow = (int) Math.ceil((row + 1) / 3.0);
+		int checkCol = (int) Math.ceil((col + 1) / 3.0);
 
-				if (Collections.frequency(seen, cellValue) > 1) return true;
-				else seen.add(board[i][j]);
-				
+		// List of seen values in 3x3 grid
+		List<Integer> seen = new ArrayList<>();
+
+		// Checks value against each cell in 3x3 grid
+		for (int i = (checkRow * 3) - 3; i < checkRow * 3; i++) {
+			for (int j = (checkCol * 3) - 3; j < checkCol * 3; j++) {
+
+				if (Collections.frequency(seen, cellValue) > 1)
+					return true;
+				else
+					seen.add(board[i][j]);
+
 			}
 		}
 		return false;
 	}
-	
-	//Returns if board is constraint compliant
+
+	// Returns if board is constraint compliant
 	private boolean validateEntire() {
-		
-		boolean valid = true;		
-			//Loop for each cell - 81
-			for (int i = 0; i < 9; i++) {
-				for (int j = 0; j < 9 && valid; j++) {
-					
-					valid = validateCell(i, j);
-					
-				}
+
+		boolean valid = true;
+		// Loop for each cell - 81
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9 && valid; j++) {
+
+				valid = validateCell(i, j);
+
 			}
-		
+		}
+
 		return valid;
 	}
 
-	//Displays entire Sudoku Board
+	// Displays entire Sudoku Board
 	public void displayBoard() {
-		for (int[] row : board) {System.out.println(Arrays.toString(row));}
-	}
-	
-	//Generates a board full of random numbers
-	private void generateTest() {
-		
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 9; j++) {
-				Random rand = new Random();
-				board[i][j] = rand.nextInt(9) + 1;
-			}
+		for (int[] row : board) {
+			System.out.println(Arrays.toString(row));
 		}
-		
 	}
-	
-	//Given a int[][] board, method fills the board to 0's
-	private void fillBoardWithNumber() {
-		for (int[] row : board) {Arrays.fill(row, 1);}
-				
+
+	// Unfinished Method
+	private void fillClues(int[][] randomCoords) {
+		for (int iterator = 0; iterator < randomCoords.length; iterator++) {
+			int i = randomCoords[iterator][0];
+			int j = randomCoords[iterator][1];
+
+		}
+
 	}
 }
