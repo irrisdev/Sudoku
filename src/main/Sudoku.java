@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -80,16 +79,69 @@ public class Sudoku {
 		return board;
 	}
 
-	public void generate() {
-		int clues = difficulty.clues;		
-
+	public void generate(int n) {
+		int clues = difficulty.clues;	
+	    int failedValidation = 0;
+	    int backTracked = 0;
+		Random rand = new Random();
 		board = new int[9][9];
+	    
+	    int i, j, nChoices, rolled;
+	    int index = 0;
+	    int[] coordinate2D;
+	    boolean[] choicesCreated = new boolean[81];
+	    ArrayList<Integer>[] choices = (ArrayList<Integer>[]) new ArrayList[81];
+
+	    while(index < 81) {
+	    	
+	    	coordinate2D = convertIndex(index);
+	    	i = coordinate2D[0];
+	    	j = coordinate2D[1];
+
+	    	if(board[i][j] == 0) {
+	    		choicesCreated[index] = true;
+	    		choices[index] = (new ArrayList<>(getCellChoices(i, j)));
+	    	}
+//	    	
+	    	nChoices = choices[index].size();
+	    	
+	    	while(nChoices == 0) {
+	    		index--;
+		    	nChoices = choices[index].size();
+		    	coordinate2D = convertIndex(index);
+		    	i = coordinate2D[0];
+		    	j = coordinate2D[1];
+		    	board[i][j] = 0;
+		    	backTracked++;
+	    	}
+	    	
+	    	rolled = choices[index].get(rand.nextInt(nChoices));
+	    	choices[index].remove((Integer) rolled);
+	    	board[i][j] = rolled;
+
+	    	if(!validateCell(i,j)) {
+	    		System.out.println("Failed a Validation");
+	    	}
+	    	index++;
+	    }
+	    displayBoard();
+	    System.out.println("Valid Board: " + validateEntire());
+	    System.out.println("Backtracked: " + backTracked + " times");
+	    System.out.println("Failed Cell Validation: " + failedValidation + " times");
+
 		
-		int[][] randomCoords = getRandomCoords(clues);
-	        
-		fillClues(randomCoords);
-		System.out.println(validateEntire());
-		
+	}
+
+	private int[] convertIndex(int index) {
+		int[] coord = new int[2];
+    	if(index < 9) {
+    		coord[0] = 0;
+    		coord[1] = index;
+    	} else {
+    		coord[0] = ((int) Math.floor(index/9));
+    		coord[1] = (index % 9);
+    	}
+		return coord;
 	}
 
 	private void fillClues(int[][] randomCoords) {
