@@ -2,39 +2,8 @@
 
 This Java program provides a Sudoku solver and generator. It allows you to solve existing Sudoku puzzles or generate new ones.
 
-## Usage
+## Example Usage
 
-To use the Sudoku solver and generator, follow these steps:
-
-1. Clone the repository to your local machine:
-
-   ```bash
-   git clone https://github.com/irrisdev/sudoku.git
-   ```
-
-2. Navigate to the project directory:
-
-   ```bash
-   cd sudoku
-   ```
-
-3. Compile the Java files:
-
-   ```bash
-   javac main/*.java
-   ```
-
-4. Run the `Main` class to generate and solve a Sudoku puzzle:
-
-   ```bash
-   java main.Main
-   ```
-
-5. The program will generate a new Sudoku puzzle, display the initial board, solve the puzzle, and display the solved board.
-
-## Example
-
-Here's an example of how to use the program:
 
 ```java
 public class Main {
