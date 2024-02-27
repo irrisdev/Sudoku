@@ -40,8 +40,7 @@ public class Sudoku {
 		} catch (IllegalArgumentException e) {
 			difficulty = Difficulty.NORMAL;
 		}
-
-		generate(5000);
+		generate();
 		OptionalDouble average = timeTaken
 	            .stream()
 	            .mapToDouble(a -> a)
@@ -66,7 +65,18 @@ public class Sudoku {
 		}
 		time = System.currentTimeMillis() - start;
 	}
-
+	
+	public void solve() {
+		
+		while(!validateEntire()) {
+			
+			
+			
+		}
+		
+		
+	}
+	
 	public void generate() {
 		
 		Random rand = new Random();

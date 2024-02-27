@@ -4,8 +4,17 @@ public class Main {
 
 	public static void main(String[] args) {
 		
-		Sudoku board = new Sudoku();
+		Sudoku_V2 sudoku = new Sudoku_V2();
 		
+		sudoku.generate();
+		
+		sudoku.displayBoard();
+		
+		sudoku.solve();
+		
+		System.out.println("Done");
+		sudoku.displayBoard();
+
 	}
 
 }
